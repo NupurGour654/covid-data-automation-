@@ -4,7 +4,6 @@ import pandas as pd
 from google.oauth2.service_account import Credentials
 import plotly.express as px
 import plotly.graph_objects as go
-import os
 
 # -------------------------------
 # Page Config
@@ -14,7 +13,7 @@ st.title("🦠 COVID-19 Interactive Dashboard")
 st.markdown("Explore COVID-19 trends using cleaned datasets from Google Sheets.")
 
 # -------------------------------
-# Load Data from Google Sheets via Service Account
+# Load Data from Google Sheets via Service Account (Secrets)
 # -------------------------------
 @st.cache_data
 def load_data():
@@ -23,10 +22,9 @@ def load_data():
         "https://www.googleapis.com/auth/drive"
     ]
 
-    BASE_DIR = os.path.dirname(__file__)
-    json_path = os.path.join(BASE_DIR, "service_account.json")
-
-    creds = Credentials.from_service_account_file(json_path, scopes=SCOPE)
+    creds = Credentials.from_service_account_info(
+        st.secrets["gcp_service_account"], scopes=SCOPE
+    )
     client = gspread.authorize(creds)
 
     # Google Sheet 1: Clean Complete Data
