@@ -2,31 +2,31 @@ import streamlit as st
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import os
 
 # -------------------------------
 # Page Config
 # -------------------------------
-st.set_page_config(
-    page_title="🦠 COVID-19 Dashboard",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# -------------------------------
-# Title
-# -------------------------------
+st.set_page_config(page_title="🦠 COVID-19 Dashboard", layout="wide")
 st.title("🦠 COVID-19 Interactive Dashboard")
-st.markdown("Explore COVID-19 trends using cleaned datasets. Interactive & fancy charts included!")
+st.markdown("Explore COVID-19 trends using cleaned datasets from Google Sheets.")
 
 # -------------------------------
-# Load Data
+# Load Data from Google Sheets
 # -------------------------------
 @st.cache_data
 def load_data():
-    cleaned_path = "../data/cleaned"  # 🔹 Update path if app.py location changes
-    clean_complete = pd.read_csv(os.path.join(cleaned_path, "covid_19_clean_complete_cleaned.csv"))
-    worldometer = pd.read_csv(os.path.join(cleaned_path, "worldometer_data_cleaned.csv"))
+    # 🔹 File IDs from Google Drive
+    CLEAN_COMPLETE_ID = "1xS796WDWsalAFcMClLNVtr8DUsuVZqjGuQ3HsAJ8OHA"
+    WORLDOMETER_ID = "1XBu5i_5EioZX-pHRhAX90DQEZy2e2-XgtulEZIGLEao"
+
+    # Convert to CSV export link
+    clean_complete_url = f"https://docs.google.com/spreadsheets/d/{CLEAN_COMPLETE_ID}/export?format=csv&gid=1327158710"
+    worldometer_url = f"https://docs.google.com/spreadsheets/d/{WORLDOMETER_ID}/export?format=csv&gid=0"
+
+    # Load CSVs
+    clean_complete = pd.read_csv(clean_complete_url)
+    worldometer = pd.read_csv(worldometer_url)
+
     return clean_complete, worldometer
 
 clean_complete, worldometer = load_data()
@@ -75,7 +75,6 @@ with tab2:
     display_cols = ["Country/Region", "TotalCases", "TotalDeaths", "TotalRecovered", "ActiveCases", "Population"]
     st.dataframe(worldometer[display_cols].sort_values("TotalCases", ascending=False).head(20))
 
-    # Summary metrics in sidebar
     st.sidebar.header("Summary Stats")
     if selected_country == "Global":
         latest = worldometer.sum(numeric_only=True)
@@ -89,7 +88,7 @@ with tab2:
         st.sidebar.metric("Total Recovered", f"{int(latest['TotalRecovered']):,}")
 
 # -------------------------------
-# Tab 3: Deaths vs Cases Barplot
+# Tab 3: Deaths vs Cases
 # -------------------------------
 with tab3:
     st.subheader("Top 15 Countries: Deaths vs Cases")
@@ -101,9 +100,8 @@ with tab3:
         orientation='h',
         color="TotalDeaths",
         color_continuous_scale="Reds",
-        labels={"TotalDeaths": "Total Deaths", "Country/Region": "Country"},
+        labels={"TotalDeaths":"Total Deaths","Country/Region":"Country"},
         text="TotalDeaths"
     )
     fig2.update_layout(yaxis={'categoryorder':'total ascending'})
     st.plotly_chart(fig2, use_container_width=True)
-
