@@ -16,14 +16,22 @@ st.markdown("Explore COVID-19 trends using cleaned datasets from Google Sheets."
 # Load Data from Google Sheets via Service Account
 # -------------------------------
 @st.cache_data
+# -------------------------------
+# Load Data from Google Sheets via Service Account
+# -------------------------------
+@st.cache_data
 def load_data():
+    import os
     SCOPE = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # Service account JSON in same folder as app.py
-    creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPE)
+    # Service account JSON path (safe handling)
+    BASE_DIR = os.path.dirname(__file__)  # folder of app.py
+    json_path = os.path.join(BASE_DIR, "service_account.json")
+
+    creds = Credentials.from_service_account_file(json_path, scopes=SCOPE)
     client = gspread.authorize(creds)
 
     # Sheet 1: Clean Complete Data
