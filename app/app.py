@@ -1,5 +1,7 @@
 import streamlit as st
+import gspread
 import pandas as pd
+from google.oauth2.service_account import Credentials
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -11,21 +13,28 @@ st.title("🦠 COVID-19 Interactive Dashboard")
 st.markdown("Explore COVID-19 trends using cleaned datasets from Google Sheets.")
 
 # -------------------------------
-# Load Data from Google Sheets
+# Load Data from Google Sheets via Service Account
 # -------------------------------
 @st.cache_data
 def load_data():
-    # 🔹 File IDs from Google Drive
-    CLEAN_COMPLETE_ID = "1xS796WDWsalAFcMClLNVtr8DUsuVZqjGuQ3HsAJ8OHA"
-    WORLDOMETER_ID = "1XBu5i_5EioZX-pHRhAX90DQEZy2e2-XgtulEZIGLEao"
+    SCOPE = [
+        "https://www.googleapis.com/auth/spreadsheets",
+        "https://www.googleapis.com/auth/drive"
+    ]
 
-    # Convert to CSV export link
-    clean_complete_url = f"https://docs.google.com/spreadsheets/d/{CLEAN_COMPLETE_ID}/export?format=csv&gid=1327158710"
-    worldometer_url = f"https://docs.google.com/spreadsheets/d/{WORLDOMETER_ID}/export?format=csv&gid=0"
+    # Service account JSON in same folder as app.py
+    creds = Credentials.from_service_account_file("service_account.json", scopes=SCOPE)
+    client = gspread.authorize(creds)
 
-    # Load CSVs
-    clean_complete = pd.read_csv(clean_complete_url)
-    worldometer = pd.read_csv(worldometer_url)
+    # Sheet 1: Clean Complete Data
+    sheet1 = client.open_by_key("1xS796WDWsalAFcMClLNVtr8DUsuVZqjGuQ3HsAJ8OHA")
+    worksheet1 = sheet1.get_worksheet(0)
+    clean_complete = pd.DataFrame(worksheet1.get_all_records())
+
+    # Sheet 2: Worldometer Data
+    sheet2 = client.open_by_key("1XBu5i_5EioZX-pHRhAX90DQEZy2e2-XgtulEZIGLEao")
+    worksheet2 = sheet2.get_worksheet(0)
+    worldometer = pd.DataFrame(worksheet2.get_all_records())
 
     return clean_complete, worldometer
 
