@@ -3,3 +3,6 @@ matplotlib
 seaborn
 Streamlit
 plotly
+gspread
+google-auth
+plotly
