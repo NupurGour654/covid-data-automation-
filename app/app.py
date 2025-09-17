@@ -22,27 +22,29 @@ st.markdown("Explore COVID-19 trends using cleaned datasets from Google Sheets."
 @st.cache_data
 def load_data():
     import os
+    import pandas as pd
+    import gspread
+    from google.oauth2.service_account import Credentials
+
     SCOPE = [
         "https://www.googleapis.com/auth/spreadsheets",
         "https://www.googleapis.com/auth/drive"
     ]
 
-    # Service account JSON path (safe handling)
-    BASE_DIR = os.path.dirname(__file__)  # folder of app.py
+    BASE_DIR = os.path.dirname(__file__)
     json_path = os.path.join(BASE_DIR, "service_account.json")
 
     creds = Credentials.from_service_account_file(json_path, scopes=SCOPE)
     client = gspread.authorize(creds)
 
-    # Sheet 1: Clean Complete Data
-    sheet1 = client.open_by_key("1xS796WDWsalAFcMClLNVtr8DUsuVZqjGuQ3HsAJ8OHA")
-    worksheet1 = sheet1.get_worksheet(0)
-    clean_complete = pd.DataFrame(worksheet1.get_all_records())
+    # Google Sheet (Clean Complete Data)
+    SHEET_ID = "PASTE_GOOGLE_SHEET_ID"
+    worksheet = client.open_by_key(SHEET_ID).get_worksheet(0)
+    clean_complete = pd.DataFrame(worksheet.get_all_records())
 
-    # Sheet 2: Worldometer Data
-    sheet2 = client.open_by_key("1XBu5i_5EioZX-pHRhAX90DQEZy2e2-XgtulEZIGLEao")
-    worksheet2 = sheet2.get_worksheet(0)
-    worldometer = pd.DataFrame(worksheet2.get_all_records())
+    # CSV file (Worldometer Data)
+    CSV_URL = "https://drive.google.com/uc?id=PASTE_CSV_FILE_ID"
+    worldometer = pd.read_csv(CSV_URL)
 
     return clean_complete, worldometer
 
